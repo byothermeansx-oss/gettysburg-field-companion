@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#10141a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gettysburg">
+<title>Gettysburg Field Companion</title>
+<style>
+:root{
+  --bg:#0e1218;--panel:#161d27;--panel2:#1f2935;--ink:#e7e2d4;--dim:#a7a293;--line:#2c3845;
+  --union:#3f7fc4;--conf:#c0463c;--gold:#c9a14a;--good:#5b9d6b;
+  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --safe-t:env(safe-area-inset-top);--safe-b:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+h1,h2,h3,h4{font-family:var(--serif);margin:0}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.hidden{display:none !important}
+#app{display:flex;flex-direction:column;height:100dvh}
+
+/* Header */
+#top{display:flex;align-items:center;gap:10px;padding:calc(8px + var(--safe-t)) 14px 8px;background:linear-gradient(#1b2330,#141a23);border-bottom:1px solid var(--line);z-index:20}
+#top .crest{width:30px;height:30px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold);font-family:var(--serif);flex:none}
+#top .ttl{font-size:15px;line-height:1.05}
+#top .sub{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+.gps-chip{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:20px;padding:5px 10px;background:#10161e}
+.gps-dot{width:8px;height:8px;border-radius:50%;background:#5a6573}
+.gps-chip.on .gps-dot{background:var(--good);box-shadow:0 0 0 3px #5b9d6b33}
+.gps-chip.err .gps-dot{background:var(--conf)}
+
+/* Main */
+#stage{flex:1;position:relative;overflow:hidden}
+.view{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* Map */
+#mapView{overflow:hidden;touch-action:none;background:#0a0e13}
+#mapInner{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#mapImg{display:block;pointer-events:none;user-select:none}
+.stand-mk{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.stand-mk .pin{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:14px solid var(--gold);filter:drop-shadow(0 1px 2px #000a)}
+.stand-mk .pin.visited{border-top-color:var(--good)}
+.stand-mk .dotc{width:16px;height:16px;border-radius:50%;background:var(--gold);border:2px solid #15110a;display:grid;place-items:center;font-size:9px;font-weight:800;color:#15110a}
+.stand-mk .lbl{margin-top:2px;font-family:var(--serif);font-size:11px;font-weight:700;color:#10233f;background:#f5efddcc;padding:1px 5px;border-radius:5px;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+#userDot{position:absolute;width:18px;height:18px;transform:translate(-50%,-50%);border-radius:50%;background:#2f8fe0;border:2px solid #fff;box-shadow:0 0 0 4px #2f8fe055,0 1px 4px #000a;z-index:5}
+#userDot.hidden{display:none}
+#accuracy{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:#2f8fe018;border:1px solid #2f8fe055;pointer-events:none}
+
+/* Map overlays */
+#nearBanner{position:absolute;left:10px;right:10px;top:10px;background:#121a24ec;border:1px solid var(--line);border-radius:13px;padding:10px 12px;display:flex;align-items:center;gap:10px;z-index:8;backdrop-filter:blur(5px)}
+#nearBanner .nb-t{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+#nearBanner .nb-n{font-family:var(--serif);font-size:15px;font-weight:700}
+#nearBanner .nb-d{font-size:12px;color:var(--gold)}
+#nearBanner .go{margin-left:auto;background:var(--gold);color:#15110a;border:0;border-radius:9px;padding:8px 12px;font-weight:700;font-size:13px;flex:none}
+.map-fab{position:absolute;right:14px;bottom:14px;width:50px;height:50px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-size:22px;z-index:8;box-shadow:0 4px 14px #0007}
+.map-fab.locate{background:var(--union);border-color:var(--union)}
+.zoomfab{position:absolute;right:14px;display:flex;flex-direction:column;gap:0;z-index:8;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.zoomfab button{width:42px;height:42px;background:var(--panel2);border:0;font-size:20px;font-weight:700}
+.zoomfab button:first-child{border-bottom:1px solid var(--line)}
+
+/* Lists */
+.list-wrap{padding:12px 12px calc(20px + var(--safe-b))}
+.sec-h{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);margin:14px 4px 8px}
+.stand-card{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:9px}
+.stand-card .num{width:30px;height:30px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none;color:var(--gold)}
+.stand-card .sc-n{font-family:var(--serif);font-weight:700;font-size:16px}
+.stand-card .sc-d{font-size:12px;color:var(--dim)}
+.stand-card .chev{margin-left:auto;color:var(--dim);font-size:20px}
+.visited-tag{font-size:9px;color:var(--good);border:1px solid #2f4636;border-radius:10px;padding:1px 6px;margin-left:6px}
+.person-row{display:flex;gap:12px;align-items:center;padding:9px;border-radius:12px;border:1px solid transparent}
+.person-row:active{background:var(--panel)}
+.person-row img{width:48px;height:48px;border-radius:9px;object-fit:cover;background:#0c1117;border:1px solid var(--line);flex:none}
+.person-row .pn{font-weight:600;font-size:14px}
+.person-row .pr{font-size:11.5px;color:var(--dim)}
+.sd{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:1px}
+
+/* Bottom nav */
+#nav{display:flex;border-top:1px solid var(--line);background:#11171f;padding-bottom:var(--safe-b)}
+#nav button{flex:1;background:transparent;border:0;padding:9px 0 8px;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600}
+#nav button .ic{font-size:19px;line-height:1}
+#nav button.active{color:var(--gold)}
+
+/* Bottom sheet */
+#sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:#05080cbb;backdrop-filter:blur(2px)}
+#sheet.hidden{display:none}
+.sheet-card{background:var(--panel);width:100%;max-width:560px;max-height:90dvh;border-radius:18px 18px 0 0;border:1px solid var(--line);border-bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:slideup .22s ease}
+@keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.sheet-grab{width:40px;height:4px;background:#3a4654;border-radius:3px;margin:9px auto 4px}
+.sheet-body{padding:6px 18px calc(26px + var(--safe-b))}
+.eyebrow{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold)}
+.sheet-body h2{font-size:22px;line-height:1.12;margin:3px 0 4px}
+.sheet-body .day{font-size:12.5px;color:var(--dim);margin-bottom:12px}
+.sheet-body p{margin:0 0 12px;line-height:1.5}
+.sheet-img{width:100%;border-radius:11px;border:1px solid var(--line);display:block;margin:4px 0 6px;background:#0c0f14}
+.cap{font-size:11px;color:var(--dim);font-style:italic;margin-bottom:12px}
+.block{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin:12px 0}
+.block h4{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--gold);margin-bottom:7px}
+.block.decision{border-left:3px solid var(--gold)}
+.block.discuss{border-left:3px solid var(--union)}
+.block.teach{background:#18202c;border-color:#26354a;border-left:3px solid var(--union)}
+.qq{font-style:italic;font-family:var(--serif);font-size:15px;color:#efe6cf;margin:0 0 8px}
+.qlist{counter-reset:q;list-style:none;padding:0;margin:0}
+.qlist li{position:relative;padding-left:28px;margin:9px 0}
+.qlist li:before{counter-increment:q;content:counter(q);position:absolute;left:0;top:0;width:20px;height:20px;background:var(--union);color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:grid;place-items:center}
+.hist{color:var(--good)}
+.ppl-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.chip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:22px;padding:4px 11px 4px 4px;background:var(--panel2);font-size:12.5px}
+.chip img{width:26px;height:26px;border-radius:50%;object-fit:cover}
+.sheet-close{position:sticky;top:8px;float:right;background:#222c3a;border:0;width:32px;height:32px;border-radius:50%;font-size:17px;font-weight:700;margin:4px}
+.toast{position:fixed;left:50%;bottom:calc(86px + var(--safe-b));transform:translateX(-50%);background:#1c2735;border:1px solid var(--gold);border-radius:24px;padding:11px 18px;font-size:14px;z-index:60;box-shadow:0 8px 24px #0009;max-width:90%;text-align:center;animation:slideup .2s}
+.btn{display:block;width:100%;text-align:center;background:var(--gold);color:#15110a;border:0;border-radius:11px;padding:13px;font-weight:700;font-size:15px;margin-top:6px}
+.install-hint{font-size:12px;color:var(--dim);text-align:center;padding:10px 18px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="crest">★</div>
+    <div>
+      <div class="ttl">Gettysburg Field Companion</div>
+      <div class="sub">USAWC · Staff Ride · GPS-Aware</div>
+    </div>
+    <div class="gps-chip" id="gpsChip"><span class="gps-dot"></span><span id="gpsTxt">GPS off</span></div>
+  </header>
+
+  <main id="stage">
+    <section id="mapView" class="view">
+      <div id="mapInner"><img id="mapImg" alt="Gettysburg battlefield map">
+        <div id="accuracy" class="hidden"></div>
+        <div id="userDot" class="hidden"></div>
+      </div>
+      <div id="nearBanner" class="hidden">
+        <div>
+          <div class="nb-t">Nearest stand</div>
+          <div class="nb-n" id="nbName">—</div>
+        </div>
+        <div class="nb-d" id="nbDist"></div>
+        <button class="go" id="nbGo">Open</button>
+      </div>
+      <div class="zoomfab" style="bottom:138px"><button id="zin">+</button><button id="zout">−</button></div>
+      <button class="map-fab locate" id="locateBtn" style="bottom:76px" title="Locate me">◎</button>
+      <button class="map-fab" id="fitBtn" title="Fit map">⤢</button>
+    </section>
+
+    <section id="listView" class="view hidden"><div class="list-wrap" id="listWrap"></div></section>
+    <section id="peopleView" class="view hidden"><div class="list-wrap" id="peopleWrap"></div></section>
+    <section id="aboutView" class="view hidden"><div class="list-wrap" id="aboutWrap"></div></section>
+  </main>
+
+  <nav id="nav">
+    <button data-v="map" class="active"><span class="ic">🗺️</span>Map</button>
+    <button data-v="list"><span class="ic">📍</span>Stands</button>
+    <button data-v="people"><span class="ic">👤</span>People</button>
+    <button data-v="about"><span class="ic">ⓘ</span>About</button>
+  </nav>
+</div>
+
+<div id="sheet" class="hidden"></div>
+<div id="toast-host"></div>
+
+<script>window.GBASSETS = window.GBASSETS || {};
+/*__ASSETS__*/
+</script>
+<script>/*__DATA__*/</script>
+<script>/*__ENGINE__*/</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+</script>
+</body>
+</html>
