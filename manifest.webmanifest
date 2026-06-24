@@ -1,7 +1,7 @@
 {
   "name": "Gettysburg Staff Ride Simulator",
   "short_name": "Gettysburg",
-  "description": "USAWC Gettysburg staff-ride app — GPS-guided tours, 3D terrain, command decisions, and a full trip planner (weather, food, photos, videos).",
+  "description": "Gettysburg staff-ride app — GPS-guided tours, 3D terrain, command decisions, and a full trip planner (weather, food, photos, videos).",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

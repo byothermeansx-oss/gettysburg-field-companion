@@ -1,6 +1,6 @@
-# Gettysburg Field Companion (PWA)
+# Gettysburg Staff Ride Simulator (PWA)
 
-A GPS-aware staff-ride field guide to the Battle of Gettysburg, built for U.S. Army War College students.
+A GPS-aware staff-ride guide to the Battle of Gettysburg.
 As you walk the battlefield, your location surfaces the events, the commander's decision, and the discussion
 questions for the ground you're standing on. Installable to the home screen; works fully offline.
 
