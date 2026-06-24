@@ -1,5 +1,5 @@
-/* Gettysburg Field Companion — service worker (offline-first) */
-const CACHE = 'gburg-fc-v1';
+/* Gettysburg Staff Ride Simulator — service worker (offline-first) */
+const CACHE = 'gburg-app-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 
