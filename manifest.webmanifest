@@ -1,7 +1,7 @@
 {
-  "name": "Gettysburg Staff Ride Simulator",
+  "name": "Gettysburg Staff Ride Companion",
   "short_name": "Gettysburg",
-  "description": "Gettysburg staff-ride app — GPS-guided tours, 3D terrain, command decisions, and a full trip planner (weather, food, photos, videos).",
+  "description": "Gettysburg staff-ride companion — GPS-guided tours, command decisions, operational graphics, and stand-to-stand directions on the ground.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
